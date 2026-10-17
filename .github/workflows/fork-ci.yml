@@ -1,4 +1,4 @@
-name: Fork CI - NamespaceFileControllerTest
+name: Fork CI
 
 on:
   pull_request:
@@ -15,3 +15,21 @@ jobs:
           cache: gradle
       - name: Run NamespaceFileControllerTest
         run: ./gradlew :webserver:test --tests 'io.kestra.webserver.controllers.api.NamespaceFileControllerTest' --no-daemon
+
+  ui-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@2028fbc5c25fe9cf00d9f06a71cc4710d4507903 # v6.0.0
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: ui/package-lock.json
+      - name: Upgrade npm (repo requires >=11.7)
+        run: npm install -g npm@12
+      - name: Install UI dependencies
+        working-directory: ui
+        run: npm ci --no-audit --no-fund
+      - name: Design-system unit tests
+        working-directory: ui/packages/design-system
+        run: npx vitest run --config vitest.unit.config.ts
