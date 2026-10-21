@@ -50,7 +50,15 @@ public class FromIonFunction implements KestraFunction {
             throw new PebbleException(null, "The 'fromIon' function expects an argument 'ion' with type string or byte[].", lineNumber, self.getName());
         }
 
-        boolean allRows = args.containsKey("allRows") ? (Boolean) args.get("allRows") : false;
+        Object allRowsArg = args.get("allRows");
+        boolean allRows;
+        if (allRowsArg == null) {
+            allRows = false;
+        } else if (allRowsArg instanceof Boolean b) {
+            allRows = b;
+        } else {
+            throw new PebbleException(null, "The 'fromIon' function expects an argument 'allRows' of type boolean, but got " + allRowsArg.getClass().getSimpleName() + " '" + allRowsArg + "'.", lineNumber, self.getName());
+        }
 
         try {
             Flux<Object> flux = FileSerde.readAll(new ByteArrayInputStream(ionBytes));

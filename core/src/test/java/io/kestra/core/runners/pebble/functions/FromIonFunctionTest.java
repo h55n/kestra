@@ -77,4 +77,27 @@ class FromIonFunctionTest {
 
         assertThrows(IllegalVariableEvaluationException.class, () -> variableRenderer.render("{{ fromIon('{not: ion') }}", Map.of()));
     }
+
+    @Test
+    void allRowsNullDefaultsToFalse() throws IllegalVariableEvaluationException {
+        String render = variableRenderer.render("{{ fromIon('{title:\"Main_Page\"}', allRows=null).title }}", Map.of());
+        assertThat(render).isEqualTo("Main_Page");
+    }
+
+    @Test
+    void allRowsNonBooleanThrowsClearError() {
+        IllegalVariableEvaluationException e = assertThrows(
+            IllegalVariableEvaluationException.class,
+            () -> variableRenderer.render("{{ fromIon('{title:\"Main_Page\"}', allRows='true') }}", Map.of())
+        );
+
+        boolean found = false;
+        for (Throwable t = e; t != null; t = t.getCause()) {
+            if (String.valueOf(t.getMessage()).contains("allRows")) {
+                found = true;
+                break;
+            }
+        }
+        assertThat(found).isTrue();
+    }
 }
